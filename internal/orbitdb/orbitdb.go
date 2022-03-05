@@ -3,47 +3,18 @@ package orbitdb
 import (
 	//odb "berty.tech/go-orbit-db"
 	"context"
-	"fmt"
-	config "github.com/ipfs/go-ipfs-config"
+	httpapi "github.com/ipfs/go-ipfs-http-client"
 	"github.com/ipfs/go-ipfs/core"
 	"github.com/ipfs/go-ipfs/core/coreapi"
 	"github.com/ipfs/go-ipfs/core/node/libp2p"
 	"github.com/ipfs/go-ipfs/repo/fsrepo"
 	iface "github.com/ipfs/interface-go-ipfs-core"
-	"io/ioutil"
 	"log"
+	"net/http"
 )
 
 // TODO: implement orbitdb handlers
-
-func createRepo(repoPath string) error {
-	cfg, err := config.Init(ioutil.Discard, 2048)
-
-	if err != nil {
-		return err
-	}
-
-	cfg.Experimental.FilestoreEnabled = true
-	cfg.Experimental.UrlstoreEnabled = true
-	cfg.Experimental.Libp2pStreamMounting = true
-	cfg.Experimental.P2pHttpProxy = true
-	cfg.Experimental.StrategicProviding = true
-
-	err = fsrepo.Init(repoPath, cfg)
-	if err != nil {
-		return fmt.Errorf("failed to init node %s", err)
-	}
-
-	return nil
-}
-
 func createNode(ctx context.Context, repoPath string) (iface.CoreAPI, error) {
-	// create the repo
-	err := createRepo(repoPath)
-
-	if err != nil {
-		return nil, err
-	}
 	// open the repo
 	repo, err := fsrepo.Open(repoPath)
 
@@ -72,13 +43,24 @@ func InitOrbitDb() error {
 	defer cancel()
 
 	//_ := "/astroid-api/orbitdb"
-	ipfsStorePath := "$HOME/.ipfs" //"/astroid-api/ipfs"
+	ipfsStorePath := "/home/valerius/.ipfs" //"/astroid-api/ipfs"
 
 	_, err := createNode(ctx, ipfsStorePath)
 
 	if err != nil {
 		log.Fatalln("Error creating IPFS Node", err)
 		return err
+	}
+
+	_, err = httpapi.NewURLApiWithClient("localhost:5001", &http.Client{
+		Transport: &http.Transport{
+			Proxy:             http.ProxyFromEnvironment,
+			DisableKeepAlives: true,
+		},
+	})
+
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 	//orbit, err := odb.NewOrbitDB(ctx, ipfs, &odb.NewOrbitDBOptions{Directory: &dbPath})
