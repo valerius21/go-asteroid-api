@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="UnattendedHostPersistenceState">
+    <option name="openedFilesInfos">
+      <list>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="347" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/cmd/astroid-api/main.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="87" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/auth.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="14" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/databases.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="130" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/messages.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="80" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/users.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="4809" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/go.mod" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="1277" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/orbitdb.go" />
+        </OpenedFileInfo>
+      </list>
+    </option>
+  </component>
+</project>
