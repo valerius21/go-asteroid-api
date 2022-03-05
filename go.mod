@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/ipfs/go-ipfs v0.12.0
+	github.com/ipfs/go-ipfs-http-client v0.2.0
 	github.com/ipfs/interface-go-ipfs-core v0.5.2
 )
 
@@ -64,7 +65,6 @@ require (
 	github.com/ipfs/go-ipfs-exchange-interface v0.1.0 // indirect
 	github.com/ipfs/go-ipfs-exchange-offline v0.1.1 // indirect
 	github.com/ipfs/go-ipfs-files v0.0.9 // indirect
-	github.com/ipfs/go-ipfs-http-client v0.2.0 // indirect
 	github.com/ipfs/go-ipfs-keystore v0.0.2 // indirect
 	github.com/ipfs/go-ipfs-pinner v0.2.1 // indirect
 	github.com/ipfs/go-ipfs-posinfo v0.0.1 // indirect

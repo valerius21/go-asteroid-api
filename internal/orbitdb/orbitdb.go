@@ -39,20 +39,20 @@ func createNode(ctx context.Context, repoPath string) (iface.CoreAPI, error) {
 
 func InitOrbitDb() error {
 	log.Println("Creating ODB context")
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	//ctx, cancel := context.WithCancel(context.Background())
+	//defer cancel()
 
 	//_ := "/astroid-api/orbitdb"
-	ipfsStorePath := "/home/valerius/.ipfs" //"/astroid-api/ipfs"
+	//ipfsStorePath := "/home/valerius/.ipfs" //"/astroid-api/ipfs"
 
-	_, err := createNode(ctx, ipfsStorePath)
+	//_, err := createNode(ctx, ipfsStorePath)
 
-	if err != nil {
-		log.Fatalln("Error creating IPFS Node", err)
-		return err
-	}
+	//if err != nil {
+	//	log.Fatalln("Error creating IPFS Node", err)
+	//	return err
+	//}
 
-	_, err = httpapi.NewURLApiWithClient("localhost:5001", &http.Client{
+	_, err := httpapi.NewURLApiWithClient("localhost:5001", &http.Client{
 		Transport: &http.Transport{
 			Proxy:             http.ProxyFromEnvironment,
 			DisableKeepAlives: true,
