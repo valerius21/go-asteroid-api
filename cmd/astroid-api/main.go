@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/pastoapp/astroid-api/internal/orbitdb"
-	"log"
+	"fmt"
+
+	odb "github.com/pastoapp/astroid-api/internal/orbitdb"
 )
 
 func main() {
@@ -18,12 +19,13 @@ func main() {
 	//routes.InitMessages(r)
 	//routes.InitAuth(r)
 
-	err := orbitdb.InitOrbitDb()
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	//r.Run(":3000")
+	store, err := odb.CreateStore("test")
+	if err != nil {
+		panic(err)
+	}
+	defer store.Close()
+
+	fmt.Printf("%+v\n", store)
 
 }

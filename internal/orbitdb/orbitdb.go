@@ -1,57 +1,26 @@
 package orbitdb
 
 import (
-	odb "berty.tech/go-orbit-db"
 	"context"
-	httpapi "github.com/ipfs/go-ipfs-http-client"
-	"github.com/ipfs/go-ipfs/core"
-	"github.com/ipfs/go-ipfs/core/coreapi"
-	"github.com/ipfs/go-ipfs/core/node/libp2p"
-	"github.com/ipfs/go-ipfs/repo/fsrepo"
-	iface "github.com/ipfs/interface-go-ipfs-core"
 	"log"
 	"net/http"
+
+	odb "berty.tech/go-orbit-db"
+	"berty.tech/go-orbit-db/iface"
+	httpapi "github.com/ipfs/go-ipfs-http-client"
 )
 
-// TODO: implement orbitdb handlers
-func createNode(ctx context.Context, repoPath string) (iface.CoreAPI, error) {
-	// open the repo
-	repo, err := fsrepo.Open(repoPath)
+var orbitDB iface.OrbitDB
 
-	if err != nil {
-		return nil, err
-	}
+func init() {
+	log.Println("Initializing OrbitDB-Context")
+	ctx := context.Background()
+	// defer cancel()
 
-	nodeOptions := &core.BuildCfg{
-		Online:  true,
-		Routing: libp2p.DHTOption,
-		Repo:    repo,
-	}
+	// TODO: use a config file
+	dbPath := "./data/astroid-api/orbitdb"
 
-	node, err := core.NewNode(ctx, nodeOptions)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return coreapi.NewCoreAPI(node)
-}
-
-func InitOrbitDb() error {
-	log.Println("Creating ODB context")
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	dbPath := "/astroid-api/orbitdb"
-	//ipfsStorePath := "/home/valerius/.ipfs" //"/astroid-api/ipfs"
-
-	//_, err := createNode(ctx, ipfsStorePath)
-
-	//if err != nil {
-	//	log.Fatalln("Error creating IPFS Node", err)
-	//	return err
-	//}
-
+	// TODO: make this configurable
 	ipfs, err := httpapi.NewURLApiWithClient("localhost:5001", &http.Client{
 		Transport: &http.Transport{
 			Proxy:             http.ProxyFromEnvironment,
@@ -60,19 +29,23 @@ func InitOrbitDb() error {
 	})
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Panicf("Error creating IPFS client: %s", err)
 	}
 
 	orbit, err := odb.NewOrbitDB(ctx, ipfs, &odb.NewOrbitDBOptions{Directory: &dbPath})
 
 	if err != nil {
-		log.Fatalln("Error creating OrbitDB")
-		return err
+		log.Panicf("Error creating OrbitDB: %s", err)
 	}
 
 	identity := orbit.Identity()
 
-	log.Println(identity.ID)
+	log.Printf("Initialized OrbitDB with ID: %s", identity.ID)
+	orbitDB = orbit
+}
 
-	return nil
+func CreateStore(name string) (iface.Store, error) {
+	store, err := orbitDB.Docs(context.Background(), "astroid-api-test-db", nil)
+
+	return store, err
 }
