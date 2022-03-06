@@ -10,7 +10,7 @@ import (
 	httpapi "github.com/ipfs/go-ipfs-http-client"
 )
 
-var orbitDB iface.OrbitDB
+var OrbitDB iface.OrbitDB
 
 func init() {
 	log.Println("Initializing OrbitDB-Context")
@@ -41,11 +41,11 @@ func init() {
 	identity := orbit.Identity()
 
 	log.Printf("Initialized OrbitDB with ID: %s", identity.ID)
-	orbitDB = orbit
+	OrbitDB = orbit
 }
 
-func CreateStore(name string) (iface.Store, error) {
-	store, err := orbitDB.Docs(context.Background(), "astroid-api-test-db", nil)
+func CreateStore(name string) (iface.DocumentStore, error) {
+	store, err := OrbitDB.Docs(context.Background(), name, nil)
 
 	return store, err
 }
