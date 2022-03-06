@@ -12,20 +12,20 @@
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/auth.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="130" />
+          <option name="caretOffset" value="224" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/messages.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="80" />
+          <option name="caretOffset" value="277" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/users.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="1080" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/orbitdb.go" />
+          <option name="caretOffset" value="15" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/databases.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="1571" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/databases.go" />
+          <option name="caretOffset" value="2699" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/orbitdb.go" />
         </OpenedFileInfo>
       </list>
     </option>

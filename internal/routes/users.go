@@ -6,7 +6,7 @@ import (
 )
 
 type User struct {
-	__id      string
+	_id       string
 	publicKey string
 	nonce     string
 	isAdmin   bool
