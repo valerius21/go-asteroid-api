@@ -119,13 +119,20 @@ func (db Database) CreateRoute(routerGroup *gin.RouterGroup) {
 
 // Find returns all items in the database
 func (db Database) findAll(c *gin.Context) {
-	var fn OperationFn = func(ctx context.Context, store iface.DocumentStore) (gin.H, error){
-		filter := func(doc interface{}) (bool, error) {
-			return true, nil
+	var fn OperationFn = func(ctx context.Context, store iface.DocumentStore) (gin.H, error) {
+		res, err := store.Get(ctx, "", nil)
+		if err != nil {
+			return gin.H{"error": err.Error()}, err
 		}
-		res, err := store.Query(ctx, filter, nil)
+		return gin.H{"data": res}, nil
 	}
-	c.JSON(http.StatusOK, db.ToJSON())
+	res, err := db.OpenAndDo(fn, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
 }
 
 // ToJSON returns the database as a JSON object
