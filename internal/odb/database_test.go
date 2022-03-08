@@ -74,7 +74,7 @@ func TestNewDatabase(t *testing.T) {
 		}
 	})
 
-	t.Run("should read an item from the database", func(t *testing.T) {
+	t.Run("should update an item in the database", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		db, err := OpenDatabase(ctx, "rw-global-test")
 
@@ -111,7 +111,7 @@ func TestNewDatabase(t *testing.T) {
 		closeDb(db, t)
 		cancel()
 
-		// read the item
+		// update the item
 		ctx, cancel = context.WithCancel(context.Background())
 		defer cancel()
 		db, err = OpenDatabase(ctx, "rw-global-test")
@@ -121,27 +121,25 @@ func TestNewDatabase(t *testing.T) {
 			t.Errorf("error creating database: %s", err)
 		}
 
-		get, err := db.Read(_id)
+		updated, err := db.Update(_id, map[string]interface{}{"Hi": "dad"})
 
 		if err != nil {
 			t.Errorf("error reading item: %s", err)
 		}
 
-		if get == nil {
+		if updated == nil {
 			t.Errorf("expected item to be returned")
 		}
-		if len(get) != 1 {
-			t.Errorf("expected only ONE item to be returned")
+		m = make(map[string]interface{})
+		err = json.Unmarshal(updated, &m)
+
+		if m["_id"].(string) != _id {
+			t.Errorf("expected id to be %s, got %s", _id, m["_id"].(string))
 		}
 
-		retItem := get[0].(map[string]interface{})
-
-		if retItem["_id"].(string) != _id {
-			t.Errorf("expected id to be %s, got %s", _id, retItem["_id"].(string))
-		}
-
-		if retItem["data"].(map[string]interface{})["Hi"] != "mom" {
-			t.Errorf("expected value to be 'mom', got %s", retItem["data"].(map[string]interface{})["Hi"])
+		if m["data"].(map[string]interface{})["Hi"] != "dad" {
+			t.Errorf("expected value to be 'dad', got %s", m["data"].(map[string]interface{})["Hi"])
 		}
 	})
+
 }

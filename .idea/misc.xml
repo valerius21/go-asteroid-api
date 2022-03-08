@@ -8,7 +8,7 @@
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/orbitdb_test.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="1278" />
+          <option name="caretOffset" value="1968" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/database.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
@@ -20,7 +20,7 @@
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/orbitdb.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="2713" />
+          <option name="caretOffset" value="2953" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/database_test.go" />
         </OpenedFileInfo>
       </list>
