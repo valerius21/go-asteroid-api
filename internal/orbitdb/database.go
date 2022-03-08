@@ -1,4 +1,4 @@
-package odb
+package orbitdb
 
 import (
 	"berty.tech/go-orbit-db/address"

@@ -1,202 +1,52 @@
 package orbitdb
 
 import (
-	"berty.tech/go-orbit-db/address"
+	berty "berty.tech/go-orbit-db"
+	"berty.tech/go-orbit-db/iface"
 	"context"
-	"fmt"
-	"github.com/docker/distribution/uuid"
-	"github.com/gin-gonic/gin"
+	httpapi "github.com/ipfs/go-ipfs-http-client"
 	"log"
 	"net/http"
-
-	odb "berty.tech/go-orbit-db"
-	"berty.tech/go-orbit-db/iface"
-	ipfsHttpApi "github.com/ipfs/go-ipfs-http-client"
 )
 
-var OrbitDB iface.OrbitDB
-
-type Database struct {
-	// id == Address
-	Name      string
-	Address   address.Address
-	StoreType string
-	store     iface.DocumentStore
-}
+var Client berty.OrbitDB
 
 func init() {
-	log.Println("Initializing OrbitDB-Context")
-	ctx := context.Background()
-	// defer cancel()
+	log.SetPrefix("[orbitdb] ")
+}
 
-	// TODO: use a config file
-	dbPath := "./data/asteroid-api/orbitdb"
-
-	// TODO: make this configurable
-	ipfs, err := ipfsHttpApi.NewURLApiWithClient("localhost:5001", &http.Client{
+func createCoreAPI(ipfsApiURL string) (*httpapi.HttpApi, error) {
+	return httpapi.NewURLApiWithClient(ipfsApiURL, &http.Client{
 		Transport: &http.Transport{
 			Proxy:             http.ProxyFromEnvironment,
 			DisableKeepAlives: true,
 		},
 	})
-
-	if err != nil {
-		log.Panicf("Error creating IPFS client: %s", err)
-	}
-
-	orbit, err := odb.NewOrbitDB(ctx, ipfs, &odb.NewOrbitDBOptions{Directory: &dbPath})
-
-	if err != nil {
-		log.Panicf("Error creating OrbitDB: %s", err)
-	}
-
-	identity := orbit.Identity()
-
-	log.Printf("Initialized OrbitDB with ID: %s", identity.ID)
-	OrbitDB = orbit
 }
 
-// CreateStore creates a new document store
-func CreateStore(name string) (iface.DocumentStore, error) {
-	store, err := OrbitDB.Docs(context.Background(), name, nil)
-
-	return store, err
-}
-
-// CreateDatabase creates a new database
-//  Create a new database, it's always a document store
-func CreateDatabase(dbName string) (*Database, error) {
-	store, err := CreateStore(dbName)
-	if err != nil {
-		log.Fatalf("%v\n", err)
-		return nil, err
-	}
-
-	defer func(store iface.DocumentStore) {
-		err := store.Close()
-		if err != nil {
-			log.Fatalf("Could not close database: %v\n", err)
-			return
-		}
-	}(store)
-
-	return &Database{
-		Name:      dbName,
-		Address:   store.Address(),
-		StoreType: store.Type(),
-		store:     store,
-	}, nil
-}
-
-func (db Database) cacheDB() {
-	// TODO: cache db
-}
-
-// CreateRoute creates a new route for the database relative to the given gin.RouterGroup
-func (db Database) CreateRoute(routerGroup *gin.RouterGroup) {
-	routerGroup.GET("/"+db.Name, db.findAll)
-	routerGroup.POST("/"+db.Name, func(c *gin.Context) {
-		var m MessageDTO
-		if err := c.ShouldBindJSON(&m); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Data Field Malformat. "+
-				"Please check your request parameters, %v\n", err.Error())})
-			return
-		}
-		m.ID = uuid.Generate().String()
-		if m.Data == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "message data and ID are required"})
-			return
-		}
-
-		res, err := db.createItem(m)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, res)
-	})
-}
-
-// Find returns all items in the database
-func (db Database) findAll(c *gin.Context) {
-	var fn OperationFn = func(ctx context.Context, store iface.DocumentStore) (gin.H, error) {
-		res, err := store.Get(ctx, "", nil)
-		if err != nil {
-			return gin.H{"error": err.Error()}, err
-		}
-		return gin.H{"data": res}, nil
-	}
-	res, err := db.OpenAndDo(fn, nil)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, res)
-}
-
-// ToJSON returns the database as a JSON object
-func (db Database) ToJSON() gin.H {
-	return gin.H{
-		"Name":      db.Name,
-		"Address":   db.Address.String(),
-		"StoreType": db.StoreType,
-	}
-}
-
-// MessageDTO is a message data transport object
-type MessageDTO struct {
-	ID   string
-	Data map[string]interface{} `json:"data"`
-}
-
-type OperationFn func(ctx context.Context, store iface.DocumentStore) (gin.H, error)
-
-// OpenAndDo performs an operation on the database and returns the result
-// This function is used to open the database and close it after the operation
-// is done.
-// @param operationFn is the operation to perform on the database.
-// @returns the result of the operation
-func (db Database) OpenAndDo(fn OperationFn, options *iface.CreateDBOptions) (gin.H, error) {
-	// TODO: add validation
-	// TODO: add example
+func InitializeOrbitDB(ipfsApiURL, orbitDbDirectory string) (context.CancelFunc, error) {
+	// TODO: add config
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	store, err := OrbitDB.Docs(ctx, db.Address.String(), options)
-
-	defer func(store iface.DocumentStore) {
-		err := store.Close()
-		if err != nil {
-			log.Fatalf("%v\n", err)
-		}
-	}(store)
-
+	odb, err := NewOrbitDB(ctx, orbitDbDirectory, ipfsApiURL)
 	if err != nil {
-		log.Fatalf("%v\n", err)
+		log.Fatal(err)
 		return nil, err
 	}
-	// operation
-	res, err := fn(ctx, store)
-	if err != nil {
-		log.Fatalf("%v\n", err)
-		return nil, err
-	}
-
-	return res, nil
+	Client = odb
+	return cancel, nil
 }
 
-// CreateItem creates a new item in the database
-func (db Database) createItem(m MessageDTO) (gin.H, error) {
-	fn := func(ctx context.Context, store iface.DocumentStore) (gin.H, error) {
-		put, err := store.Put(ctx, map[string]interface{}{"_id": m.ID, "data": m.Data})
-		if err != nil {
-			return nil, err
-		}
-		return gin.H{
-			"key":   put.GetKey(),
-			"value": put.GetValue(),
-		}, nil
+func NewOrbitDB(ctx context.Context, dbPath, ipfsApiURL string) (iface.OrbitDB, error) {
+	coreAPI, err := createCoreAPI(ipfsApiURL)
+
+	if err != nil {
+		log.Fatalf("Error creating Core API: %v", err)
+		return nil, err
 	}
-	return db.OpenAndDo(fn, nil)
+
+	options := &berty.NewOrbitDBOptions{
+		Directory: &dbPath,
+	}
+
+	return berty.NewOrbitDB(ctx, coreAPI, options)
 }

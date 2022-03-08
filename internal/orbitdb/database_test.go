@@ -1,4 +1,4 @@
-package odb
+package orbitdb
 
 import (
 	"encoding/json"
