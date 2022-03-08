@@ -4,31 +4,23 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
-          <option name="caretOffset" value="15" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/routes/databases.go" />
+          <option name="caretOffset" value="208" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/database_test.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="24" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/.gitignore" />
+          <option name="caretOffset" value="1228" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/orbitdb_test.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="2949" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/orbitdb.go" />
+          <option name="caretOffset" value="398" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/database.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="0" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/dev/README.md" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="65" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/cmd/README.md" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="621" />
+          <option name="caretOffset" value="825" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/orbitdb.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="747" />
+          <option name="caretOffset" value="1228" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/orbitdb_test.go" />
         </OpenedFileInfo>
       </list>

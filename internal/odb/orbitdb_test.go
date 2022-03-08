@@ -6,12 +6,14 @@ import (
 	"testing"
 )
 
+const IpfsApiURL string = "http://localhost:5001"
+
 func TestODBCreation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	t.Run("Should create an OrbitDB instance", func(t *testing.T) {
-		odb, err := NewOrbitDB(ctx, t.TempDir())
+		odb, err := NewOrbitDB(ctx, t.TempDir(), IpfsApiURL)
 
 		Client = odb
 
@@ -37,10 +39,31 @@ func TestODBCreation(t *testing.T) {
 	})
 }
 
+func TestOrbitDBInit(t *testing.T) {
+	t.Run("should initialize the Client global var", func(t *testing.T) {
+		cancel, err := InitializeOrbitDB(IpfsApiURL, t.TempDir())
+
+		defer cancel()
+
+		if err != nil {
+			t.Errorf("Error initializing OrbitDB: %s", err)
+		}
+
+		if Client == nil {
+			t.Errorf("OrbitDB client is nil")
+		}
+
+		if Client.Identity().ID == "" {
+			t.Errorf("OrbitDB instance has no identity")
+		}
+
+	})
+}
+
 func TestDocStore(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	odb, _ := NewOrbitDB(ctx, t.TempDir())
+	odb, _ := NewOrbitDB(ctx, t.TempDir(), IpfsApiURL)
 
 	Client = odb
 

@@ -24,9 +24,19 @@ func createCoreAPI(ipfsApiURL string) (*httpapi.HttpApi, error) {
 	})
 }
 
-func NewOrbitDB(ctx context.Context, dbPath string) (iface.OrbitDB, error) {
+func InitializeOrbitDB(ipfsApiURL, orbitDbDirectory string) (context.CancelFunc, error) {
 	// TODO: add config
-	ipfsApiURL := "http://localhost:5001"
+	ctx, cancel := context.WithCancel(context.Background())
+	odb, err := NewOrbitDB(ctx, orbitDbDirectory, ipfsApiURL)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	Client = odb
+	return cancel, nil
+}
+
+func NewOrbitDB(ctx context.Context, dbPath, ipfsApiURL string) (iface.OrbitDB, error) {
 	coreAPI, err := createCoreAPI(ipfsApiURL)
 
 	if err != nil {
