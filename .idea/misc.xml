@@ -4,11 +4,7 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
-          <option name="caretOffset" value="2628" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/database_test.go" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="2415" />
+          <option name="caretOffset" value="2369" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/database.go" />
         </OpenedFileInfo>
       </list>

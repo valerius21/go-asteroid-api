@@ -1,7 +1,6 @@
 package orbitdb
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -114,8 +113,6 @@ func TestNewDatabase(t *testing.T) {
 
 		read, err := db.Read(key)
 
-		fmt.Println(read)
-		fmt.Println(err)
 		if err != nil {
 			t.Errorf("error reading item: %s", err)
 		}

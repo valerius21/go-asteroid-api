@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/docker/distribution/uuid"
 	"log"
+	"time"
 )
 import "context"
 
@@ -13,12 +14,13 @@ type Database struct {
 	Store   *iface.DocumentStore
 	Name    string
 	Address address.Address
-	Close   func() error // TODO: isolate in function?
 }
 
 func init() {
 	log.SetPrefix("[database] ")
 }
+
+var timeout = 10 * time.Duration(time.Second)
 
 // OpenDatabase creates or opens a database
 func OpenDatabase(ctx context.Context, name string) (*Database, error) {
@@ -33,15 +35,11 @@ func OpenDatabase(ctx context.Context, name string) (*Database, error) {
 		Name:    name,
 		Store:   &docs,
 		Address: docs.Address(),
-		Close:   docs.Close,
 	}, nil
 }
 
-// TODO: return interfaces instead of []byte
-
 func (d Database) Create(item interface{}) (map[string]interface{}, error) {
-	// TODO: add timeouts
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	store := *d.Store
@@ -66,7 +64,7 @@ func (d Database) Create(item interface{}) (map[string]interface{}, error) {
 }
 
 func (d Database) Read(key string) (map[string]interface{}, error) {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	store := *d.Store
@@ -99,7 +97,7 @@ func (d Database) Read(key string) (map[string]interface{}, error) {
 }
 
 func (d Database) Update(key string, item interface{}) (map[string]interface{}, error) {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	store := *d.Store
@@ -145,7 +143,7 @@ func (d Database) Update(key string, item interface{}) (map[string]interface{}, 
 }
 
 func (d Database) Delete(key string) error {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	store := *d.Store
 	_, err := store.Delete(ctx, key)
@@ -156,4 +154,9 @@ func (d Database) Delete(key string) error {
 	}
 
 	return nil
+}
+
+func (d Database) Close() error {
+	store := *d.Store
+	return store.Close()
 }
