@@ -4,24 +4,12 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
-          <option name="caretOffset" value="2957" />
+          <option name="caretOffset" value="2628" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/database_test.go" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="1232" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/orbitdb_test.go" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="2018" />
+          <option name="caretOffset" value="2415" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/database.go" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="485" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/orbitdb.go" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="0" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/cmd/astroid-api/main.go" />
         </OpenedFileInfo>
       </list>
     </option>

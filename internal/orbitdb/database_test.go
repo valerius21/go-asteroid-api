@@ -2,6 +2,8 @@ package orbitdb
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"testing"
 )
 import "context"
@@ -74,6 +76,60 @@ func TestNewDatabase(t *testing.T) {
 		}
 	})
 
+	t.Run("should create an item and then read it between closes", func(t *testing.T) {
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		db, err := OpenDatabase(ctx, "rw-global-test")
+
+		if err != nil {
+			t.Errorf("error creating database: %s", err)
+		}
+		resp, err := db.Create(item)
+
+		if err != nil {
+			t.Errorf("error adding item: %s", err)
+		}
+
+		if len(resp) == 0 {
+			t.Errorf("expected response to have length > 0")
+		}
+
+		if resp == nil {
+			t.Errorf("expected response to be returned")
+		}
+		closeDb(db, t)
+		cancel()
+
+		// read the item
+		ctx, cancel = context.WithCancel(context.Background())
+		defer cancel()
+		db, err = OpenDatabase(ctx, "rw-global-test")
+
+		if err != nil {
+			t.Errorf("error creating database: %s", err)
+		}
+
+		defer closeDb(db, t)
+		key := resp["_id"].(string)
+
+		read, err := db.Read(key)
+
+		fmt.Println(read)
+		fmt.Println(err)
+		if err != nil {
+			t.Errorf("error reading item: %s", err)
+		}
+
+		if !reflect.DeepEqual(read["data"], resp["data"]) {
+			t.Errorf("expected read to be equal to write")
+		}
+
+		if !reflect.DeepEqual(read["_id"], resp["_id"]) {
+			t.Errorf("expected read to be equal to write")
+		}
+	})
+
 	t.Run("should update an item in the database", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		db, err := OpenDatabase(ctx, "rw-global-test")
@@ -83,14 +139,11 @@ func TestNewDatabase(t *testing.T) {
 		}
 
 		// prepare the item
-		resp, err := db.Create(item)
+		m, err := db.Create(item)
 
 		if err != nil {
 			t.Errorf("error adding item: %s", err)
 		}
-
-		m := make(map[string]interface{})
-		err = json.Unmarshal(resp, &m)
 
 		if err != nil {
 			t.Errorf("error unmarshalling response: %s", err)
@@ -152,10 +205,8 @@ func TestNewDatabase(t *testing.T) {
 			t.Errorf("error creating database: %s", err)
 		}
 
-		resp, err := db.Create(item)
+		m, err := db.Create(item)
 
-		m := make(map[string]interface{})
-		err = json.Unmarshal(resp, &m)
 		_id := m["_id"].(string)
 
 		err = db.Delete(_id)

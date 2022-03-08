@@ -15,7 +15,7 @@ func init() {
 	log.SetPrefix("[orbitdb] ")
 }
 
-func createCoreAPI(ipfsApiURL string) (*httpapi.HttpApi, error) {
+func createUrlHttpApi(ipfsApiURL string) (*httpapi.HttpApi, error) {
 	return httpapi.NewURLApiWithClient(ipfsApiURL, &http.Client{
 		Transport: &http.Transport{
 			Proxy:             http.ProxyFromEnvironment,
@@ -26,6 +26,7 @@ func createCoreAPI(ipfsApiURL string) (*httpapi.HttpApi, error) {
 
 func InitializeOrbitDB(ipfsApiURL, orbitDbDirectory string) (context.CancelFunc, error) {
 	// TODO: add config
+	// TODO: add other httpapi options
 	ctx, cancel := context.WithCancel(context.Background())
 	odb, err := NewOrbitDB(ctx, orbitDbDirectory, ipfsApiURL)
 	if err != nil {
@@ -37,7 +38,7 @@ func InitializeOrbitDB(ipfsApiURL, orbitDbDirectory string) (context.CancelFunc,
 }
 
 func NewOrbitDB(ctx context.Context, dbPath, ipfsApiURL string) (iface.OrbitDB, error) {
-	coreAPI, err := createCoreAPI(ipfsApiURL)
+	coreAPI, err := createUrlHttpApi(ipfsApiURL)
 
 	if err != nil {
 		log.Fatalf("Error creating Core API: %v", err)

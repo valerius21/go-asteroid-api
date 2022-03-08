@@ -3,6 +3,7 @@ package orbitdb
 import (
 	"berty.tech/go-orbit-db/address"
 	"berty.tech/go-orbit-db/iface"
+	"encoding/json"
 	"github.com/docker/distribution/uuid"
 	"log"
 )
@@ -38,7 +39,7 @@ func OpenDatabase(ctx context.Context, name string) (*Database, error) {
 
 // TODO: return interfaces instead of []byte
 
-func (d Database) Create(item interface{}) ([]byte, error) {
+func (d Database) Create(item interface{}) (map[string]interface{}, error) {
 	// TODO: add timeouts
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -54,10 +55,17 @@ func (d Database) Create(item interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	return put.GetValue(), nil
+	m := make(map[string]interface{})
+	err = json.Unmarshal(put.GetValue(), &m)
+	if err != nil {
+		log.Fatalf("Could not unmarshal item: %v", err)
+		return nil, err
+	}
+
+	return m, nil
 }
 
-func (d Database) Read(key string) ([]interface{}, error) {
+func (d Database) Read(key string) (map[string]interface{}, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -76,7 +84,18 @@ func (d Database) Read(key string) ([]interface{}, error) {
 		return nil, err
 	}
 
-	return get, nil
+	if len(get) != 1 {
+		return make(map[string]interface{}, 0), nil
+	}
+
+	item := get[0]
+
+	if err != nil {
+		log.Fatalf("Could not unmarshal item: %v", err)
+		return nil, err
+	}
+
+	return item.(map[string]interface{}), nil
 }
 
 func (d Database) Update(key string, item interface{}) ([]byte, error) {
