@@ -98,7 +98,7 @@ func (d Database) Read(key string) (map[string]interface{}, error) {
 	return item.(map[string]interface{}), nil
 }
 
-func (d Database) Update(key string, item interface{}) ([]byte, error) {
+func (d Database) Update(key string, item interface{}) (map[string]interface{}, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -133,7 +133,15 @@ func (d Database) Update(key string, item interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	return put.GetValue(), nil
+	m := make(map[string]interface{})
+	err = json.Unmarshal(put.GetValue(), &m)
+
+	if err != nil {
+		log.Fatalf("Could not unmarshal item: %v", err)
+		return nil, err
+	}
+
+	return m, nil
 }
 
 func (d Database) Delete(key string) error {

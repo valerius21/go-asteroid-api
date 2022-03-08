@@ -1,7 +1,6 @@
 package orbitdb
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
@@ -174,17 +173,15 @@ func TestNewDatabase(t *testing.T) {
 			t.Errorf("error creating database: %s", err)
 		}
 
-		updated, err := db.Update(_id, map[string]interface{}{"Hi": "dad"})
+		m, err = db.Update(_id, map[string]interface{}{"Hi": "dad"})
 
 		if err != nil {
 			t.Errorf("error reading item: %s", err)
 		}
 
-		if updated == nil {
+		if m == nil {
 			t.Errorf("expected item to be returned")
 		}
-		m = make(map[string]interface{})
-		err = json.Unmarshal(updated, &m)
 
 		if m["_id"].(string) != _id {
 			t.Errorf("expected id to be %s, got %s", _id, m["_id"].(string))
