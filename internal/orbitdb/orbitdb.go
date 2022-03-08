@@ -17,10 +17,10 @@ import (
 var OrbitDB iface.OrbitDB
 
 type Database struct {
-	// id == address
-	name      string
-	address   address.Address
-	storeType string
+	// id == Address
+	Name      string
+	Address   address.Address
+	StoreType string
 	store     iface.DocumentStore
 }
 
@@ -81,9 +81,9 @@ func CreateDatabase(dbName string) (*Database, error) {
 	}(store)
 
 	return &Database{
-		name:      dbName,
-		address:   store.Address(),
-		storeType: store.Type(),
+		Name:      dbName,
+		Address:   store.Address(),
+		StoreType: store.Type(),
 		store:     store,
 	}, nil
 }
@@ -94,8 +94,8 @@ func (db Database) cacheDB() {
 
 // CreateRoute creates a new route for the database relative to the given gin.RouterGroup
 func (db Database) CreateRoute(routerGroup *gin.RouterGroup) {
-	routerGroup.GET("/"+db.name, db.findAll)
-	routerGroup.POST("/"+db.name, func(c *gin.Context) {
+	routerGroup.GET("/"+db.Name, db.findAll)
+	routerGroup.POST("/"+db.Name, func(c *gin.Context) {
 		var m MessageDTO
 		if err := c.ShouldBindJSON(&m); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Data Field Malformat. "+
@@ -138,9 +138,9 @@ func (db Database) findAll(c *gin.Context) {
 // ToJSON returns the database as a JSON object
 func (db Database) ToJSON() gin.H {
 	return gin.H{
-		"name":      db.name,
-		"address":   db.address.String(),
-		"storeType": db.storeType,
+		"Name":      db.Name,
+		"Address":   db.Address.String(),
+		"StoreType": db.StoreType,
 	}
 }
 
@@ -163,7 +163,7 @@ func (db Database) OpenAndDo(fn OperationFn, options *iface.CreateDBOptions) (gi
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	store, err := OrbitDB.Docs(ctx, db.address.String(), options)
+	store, err := OrbitDB.Docs(ctx, db.Address.String(), options)
 
 	defer func(store iface.DocumentStore) {
 		err := store.Close()

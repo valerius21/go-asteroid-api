@@ -15,6 +15,22 @@
           <option name="caretOffset" value="2949" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/orbitdb.go" />
         </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="0" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/dev/README.md" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="65" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/cmd/README.md" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="621" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/orbitdb.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="747" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/odb/orbitdb_test.go" />
+        </OpenedFileInfo>
       </list>
     </option>
   </component>
