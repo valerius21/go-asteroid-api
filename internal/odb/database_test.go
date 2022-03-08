@@ -142,4 +142,32 @@ func TestNewDatabase(t *testing.T) {
 		}
 	})
 
+	t.Run("should delete an item with the specified key", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		db, err := OpenDatabase(ctx, "rw-global-test")
+		defer closeDb(db, t)
+
+		if err != nil {
+			t.Errorf("error creating database: %s", err)
+		}
+
+		resp, err := db.Create(item)
+
+		m := make(map[string]interface{})
+		err = json.Unmarshal(resp, &m)
+		_id := m["_id"].(string)
+
+		err = db.Delete(_id)
+
+		if err != nil {
+			t.Errorf("error deleting item: %s", err)
+		}
+
+		get, err := db.Read(_id)
+
+		if len(get) != 0 {
+			t.Errorf("expected item to be deleted")
+		}
+	})
 }

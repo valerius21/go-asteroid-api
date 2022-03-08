@@ -36,6 +36,8 @@ func OpenDatabase(ctx context.Context, name string) (*Database, error) {
 	}, nil
 }
 
+// TODO: return interfaces instead of []byte
+
 func (d Database) Create(item interface{}) ([]byte, error) {
 	// TODO: add timeouts
 	ctx, cancel := context.WithCancel(context.Background())
