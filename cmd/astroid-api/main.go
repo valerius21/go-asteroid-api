@@ -9,7 +9,7 @@ import (
 var (
 	ipfsURL       = "http://localhost:5001"
 	orbitDbDir    = "./data/orbitdb"
-	defaultStores = []string{"users", "notes"}
+	defaultStores = []string{"users", "note"}
 )
 
 func main() {

@@ -18,7 +18,7 @@ type User struct {
 	IsAdmin   bool
 	CreatedAt int64
 	UpdatedAt int64
-	//notes TODO: add notes
+	//note TODO: add note
 }
 
 func init() {
@@ -76,7 +76,7 @@ func NewUser(publicKey string, isAdmin bool) (*User, error) {
 		log.Fatalln("Could not create user")
 		return nil, err
 	}
-	log.Printf("%v\n", resp)
+
 	_id := resp["_id"].(string)
 
 	newID, err := uuid.Parse(_id)
