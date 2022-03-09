@@ -82,7 +82,7 @@ func (n Note) Find(key string) (*Note, error) {
 	}
 
 	_id := resp["_id"].(string)
-	rdata := resp["Data"].(map[string]interface{})
+	rdata := resp["data"].(map[string]interface{})
 
 	u, err := uuid.Parse(_id)
 

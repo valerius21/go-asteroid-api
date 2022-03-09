@@ -36,4 +36,36 @@ func TestNewNotes(t *testing.T) {
 		}
 	})
 
+	t.Run("should create and find some notes", func(t *testing.T) {
+		for i := 0; i < 10; i++ {
+			note, err := NewNote(item)
+
+			if err != nil {
+				t.Fatalf("could not create note %v\n", err)
+			}
+
+			if note.Data == nil {
+				t.Fatalf("note item is empty")
+			}
+
+			if note.Data.(map[string]interface{})["Hi"] != "Mom" {
+				t.Fatalf("note item is not correct")
+			}
+
+			qNote, err := Note{}.Find(note.ID.String())
+
+			if err != nil {
+				t.Fatalf("could not find note %v\n", err)
+			}
+
+			if qNote.Data.(map[string]interface{})["Hi"] != "Mom" {
+				t.Fatalf("note item is not correct")
+			}
+
+			if qNote.ID != note.ID {
+				t.Fatalf("note id is not correct")
+			}
+		}
+	})
+
 }
