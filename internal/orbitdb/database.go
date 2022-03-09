@@ -3,27 +3,44 @@ package orbitdb
 import (
 	"berty.tech/go-orbit-db/address"
 	"berty.tech/go-orbit-db/iface"
+	"berty.tech/go-orbit-db/stores/operation"
 	"encoding/json"
+	"fmt"
 	"github.com/docker/distribution/uuid"
 	"log"
 	"time"
 )
 import "context"
 
+// Database is the main interface for interacting with OrbitDB
 type Database struct {
 	Store   *iface.DocumentStore
 	Name    string
 	Address address.Address
 }
 
-func init() {
-	log.SetPrefix("[database] ")
+type DatabaseCreateOptions struct {
+	ID string
 }
 
+func init() {
+	log.SetPrefix("[orbitdb/database] ")
+}
+
+// timeout is used to set the timeout for the database operations
 var timeout = 10 * time.Duration(time.Second)
+
+// infinite items to return
+var infinite = -1
 
 // OpenDatabase creates or opens a database
 func OpenDatabase(ctx context.Context, name string) (*Database, error) {
+	if Client == nil {
+		log.Fatalf("Client is not initialized")
+		return nil, fmt.Errorf("client is not initialized." +
+			" Please run orbitdb.InitializeOrbitDB")
+	}
+
 	docs, err := Client.Docs(ctx, name, nil)
 
 	if err != nil {
@@ -38,15 +55,26 @@ func OpenDatabase(ctx context.Context, name string) (*Database, error) {
 	}, nil
 }
 
-func (d Database) Create(item interface{}) (map[string]interface{}, error) {
+// Create creates a new document in the database
+func (d Database) Create(item interface{}, options *DatabaseCreateOptions) (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	store := *d.Store
-	put, err := store.Put(ctx, map[string]interface{}{
-		"_id":  uuid.Generate().String(),
-		"data": item,
-	})
+	var put operation.Operation
+	var err error
+
+	if options != nil {
+		put, err = store.Put(ctx, map[string]interface{}{
+			"_id":  options.ID,
+			"data": item,
+		})
+	} else {
+		put, err = store.Put(ctx, map[string]interface{}{
+			"_id":  uuid.Generate().String(),
+			"data": item,
+		})
+	}
 
 	if err != nil {
 		log.Fatalf("Could not create item: %v", err)
@@ -63,12 +91,13 @@ func (d Database) Create(item interface{}) (map[string]interface{}, error) {
 	return m, nil
 }
 
+// Read reads a document from the database
 func (d Database) Read(key string) (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	store := *d.Store
-	err := store.Load(ctx, -1)
+	err := store.Load(ctx, infinite)
 
 	if err != nil {
 		log.Fatalf("Could not load database: %v", err)
@@ -82,6 +111,7 @@ func (d Database) Read(key string) (map[string]interface{}, error) {
 		return nil, err
 	}
 
+	// in case more or less than one item is found
 	if len(get) != 1 {
 		return make(map[string]interface{}, 0), nil
 	}
@@ -96,12 +126,13 @@ func (d Database) Read(key string) (map[string]interface{}, error) {
 	return item.(map[string]interface{}), nil
 }
 
+// Update updates a document in the database
 func (d Database) Update(key string, item interface{}) (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	store := *d.Store
-	err := store.Load(ctx, -1)
+	err := store.Load(ctx, infinite)
 	if err != nil {
 		log.Fatalf("Could not load database: %v", err)
 		return nil, err
@@ -142,6 +173,7 @@ func (d Database) Update(key string, item interface{}) (map[string]interface{}, 
 	return m, nil
 }
 
+// Delete deletes a document from the database
 func (d Database) Delete(key string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -156,6 +188,7 @@ func (d Database) Delete(key string) error {
 	return nil
 }
 
+// Close closes the database
 func (d Database) Close() error {
 	store := *d.Store
 	return store.Close()

@@ -59,7 +59,7 @@ func TestNewDatabase(t *testing.T) {
 		if err != nil {
 			t.Errorf("error creating database: %s", err)
 		}
-		resp, err := db.Create(item)
+		resp, err := db.Create(item, nil)
 
 		if err != nil {
 			t.Errorf("error adding item: %s", err)
@@ -83,7 +83,7 @@ func TestNewDatabase(t *testing.T) {
 		if err != nil {
 			t.Errorf("error creating database: %s", err)
 		}
-		resp, err := db.Create(item)
+		resp, err := db.Create(item, nil)
 
 		if err != nil {
 			t.Errorf("error adding item: %s", err)
@@ -135,7 +135,7 @@ func TestNewDatabase(t *testing.T) {
 		}
 
 		// prepare the item
-		m, err := db.Create(item)
+		m, err := db.Create(item, nil)
 
 		if err != nil {
 			t.Errorf("error adding item: %s", err)
@@ -199,7 +199,7 @@ func TestNewDatabase(t *testing.T) {
 			t.Errorf("error creating database: %s", err)
 		}
 
-		m, err := db.Create(item)
+		m, err := db.Create(item, nil)
 
 		_id := m["_id"].(string)
 

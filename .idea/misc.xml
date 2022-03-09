@@ -4,8 +4,28 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
-          <option name="caretOffset" value="2369" />
+          <option name="caretOffset" value="3106" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/middleware/user/user_test.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="3227" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/database.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="2575" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/database_test.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="1193" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/orbitdb.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="2575" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/orbitdb/database_test.go" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="1102" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/internal/middleware/user/user.go" />
         </OpenedFileInfo>
       </list>
     </option>

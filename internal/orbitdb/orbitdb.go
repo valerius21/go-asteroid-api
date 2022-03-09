@@ -12,7 +12,7 @@ import (
 var Client berty.OrbitDB
 
 func init() {
-	log.SetPrefix("[orbitdb] ")
+	log.SetPrefix("[orbitdb/orbitdb] ")
 }
 
 func createUrlHttpApi(ipfsApiURL string) (*httpapi.HttpApi, error) {
