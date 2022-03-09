@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"github.com/pastoapp/astroid-api/internal/orbitdb"
 	"testing"
 )
@@ -63,16 +64,44 @@ func TestNewUser(t *testing.T) {
 			t.Errorf("an error occurred %v\n", err)
 		}
 
-		if user.publicKey != PublicKey {
+		if user.PublicKey != PublicKey {
 			t.Errorf("public key does not match")
 		}
 
-		if user.nonce == "" {
-			t.Errorf("no valid nonce found")
+		if user.Nonce == "" {
+			t.Errorf("no valid Nonce found")
 		}
 
-		if user.isAdmin {
+		if user.IsAdmin {
 			t.Errorf("user should not be admin")
 		}
+	})
+
+	t.Run("should create a user and find it", func(t *testing.T) {
+		user, err := NewUser(PublicKey, false)
+		if err != nil {
+			t.Errorf("error creating the user, %v\n", err)
+		}
+
+		resp, err := Find(user.ID.String())
+		if err != nil {
+			t.Errorf("error finding the user %v - %v\n", user, resp)
+		}
+	})
+
+	t.Run("should create multiple users and find them", func(t *testing.T) {
+		for i := 0; i < 10; i++ {
+			user, err := NewUser(PublicKey, false)
+			if err != nil {
+				t.Errorf("error creating user %v\n", err)
+			}
+			resp, err := Find(user.ID.String())
+
+			_, err = uuid.Parse(resp.ID.String())
+			if err != nil {
+				t.Errorf("user could not be queried")
+			}
+		}
+
 	})
 }

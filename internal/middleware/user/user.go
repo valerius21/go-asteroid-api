@@ -13,11 +13,11 @@ import (
 
 type User struct {
 	ID        uuid.UUID
-	publicKey string
-	nonce     string
-	isAdmin   bool
-	createdAt int64
-	updatedAt int64
+	PublicKey string
+	Nonce     string
+	IsAdmin   bool
+	CreatedAt int64
+	UpdatedAt int64
 	//notes TODO: add notes
 }
 
@@ -40,17 +40,17 @@ func NewUser(publicKey string, isAdmin bool) (*User, error) {
 
 	nonce, err := GenerateNonce()
 	if err != nil {
-		log.Fatalln("Failed to generate nonce")
+		log.Fatalln("Failed to generate Nonce")
 		return nil, err
 	}
 
 	user := &User{
 		ID:        uuid.Generate(),
-		publicKey: publicKey,
-		nonce:     nonce,
-		isAdmin:   isAdmin,
-		createdAt: time.Now().UTC().Unix(),
-		updatedAt: time.Now().UTC().Unix(),
+		PublicKey: publicKey,
+		Nonce:     nonce,
+		IsAdmin:   isAdmin,
+		CreatedAt: time.Now().UTC().Unix(),
+		UpdatedAt: time.Now().UTC().Unix(),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -70,14 +70,30 @@ func NewUser(publicKey string, isAdmin bool) (*User, error) {
 		}
 	}(db)
 
-	_, err = db.Create(user, &orbitdb.DatabaseCreateOptions{ID: user.ID.String()})
+	resp, err := db.Create(*user, nil)
 
 	if err != nil {
 		log.Fatalln("Could not create user")
 		return nil, err
 	}
+	log.Printf("%v\n", resp)
+	_id := resp["_id"].(string)
 
-	return user, nil
+	newID, err := uuid.Parse(_id)
+
+	if err != nil {
+		log.Fatalln("Could not parse UUID")
+		return nil, err
+	}
+
+	return &User{
+		ID:        newID,
+		PublicKey: user.PublicKey,
+		Nonce:     user.Nonce,
+		IsAdmin:   user.IsAdmin,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
 }
 
 func (u User) Login() (string, error) {
@@ -104,11 +120,31 @@ func Find(key string) (*User, error) {
 		}
 	}(db)
 
-	_, err = db.Read(key)
+	find, err := db.Read(key)
 
 	if err != nil {
 		log.Fatalln("Could not find user")
 		return nil, err
 	}
-	return nil, fmt.Errorf("not implemented")
+
+	id, err := uuid.Parse(find["_id"].(string))
+
+	if err != nil {
+		log.Fatalln("Could not parse user id")
+		return nil, err
+	}
+
+	data := find["data"].(map[string]interface{})
+
+	ca := data["CreatedAt"].(float64)
+	ua := data["UpdatedAt"].(float64)
+
+	return &User{
+		ID:        id,
+		PublicKey: data["PublicKey"].(string),
+		Nonce:     data["Nonce"].(string),
+		IsAdmin:   data["IsAdmin"].(bool),
+		CreatedAt: int64(ca),
+		UpdatedAt: int64(ua),
+	}, nil
 }
