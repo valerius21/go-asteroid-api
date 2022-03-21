@@ -84,7 +84,7 @@ func (_ Users) response(u *user.User) gin.H {
 //func (u User) update(context *gin.Context) {
 //
 //}
-//
+
 //func (u User) requestToken(context *gin.Context) {
 //
 //}
