@@ -11,11 +11,7 @@ import (
 
 // TODO: implement jwt
 func init() {
-	_, err := NewJWTMiddleware()
-
-	if err != nil {
-		log.Fatalf("[JWT] %v\n", err)
-	}
+	log.SetPrefix("[jwt/jwt] ")
 }
 
 type Login struct {
@@ -45,7 +41,7 @@ func NewJWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 				return "", jwt.ErrFailedAuthentication
 			}
 			if err != nil {
-				log.Fatalln(err)
+				log.Println(err)
 				return "", jwt.ErrFailedAuthentication
 			}
 
@@ -61,7 +57,7 @@ func NewJWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 			if err != nil {
 				err2 := usr.RefreshNonce()
 				if err2 != nil {
-					log.Fatalln(err2)
+					log.Println(err2)
 				}
 				return nil, err
 			}
