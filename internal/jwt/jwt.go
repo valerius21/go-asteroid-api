@@ -23,7 +23,7 @@ type Login struct {
 	Signature string `json:"signature" form:"signature" binding:"required"`
 }
 
-var identityKey = "id"
+var identityKey = "_id"
 
 func NewJWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 	return jwt.New(&jwt.GinJWTMiddleware{
@@ -76,16 +76,17 @@ func NewJWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 			}, nil
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			panic("authorization not implemented")
-			return false
+			// TODO: authorize user data only
+			return true
 		},
 		IdentityKey: identityKey,
-		IdentityHandler: func(context *gin.Context) interface{} {
-			panic("identity handler not implemented")
-		},
+		//IdentityHandler: func(context *gin.Context) interface{} {
+		//	//panic("identity handler not implemented")
+		//	return nil
+		//},
 		// the JWT middleware will call this function if an authorization succeeds. It's in the JWT payload
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			return jwt.MapClaims{"hI": "MOm"}
+			return jwt.MapClaims{"hI": "MOm"} // TODO: implement payload
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
@@ -95,5 +96,13 @@ func NewJWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 		},
 		TimeFunc:   time.Now,
 		CookieName: "asteroid",
+		// TODO: add for production
+		// TODO: do cookie request testing
+		//SendCookie:     true,
+		//SecureCookie:   false,            //TODO: non HTTPS dev environments; use production env
+		//CookieHTTPOnly: true,             // JS can't modify
+		//CookieDomain:   "localhost:8080", //TODO: change to env variable
+		//TokenLookup:    "cookie:token",
+		//CookieSameSite: http.SameSiteDefaultMode, //SameSiteDefaultMode, SameSiteLaxMode, SameSiteStrictMode, SameSiteNoneMode
 	})
 }

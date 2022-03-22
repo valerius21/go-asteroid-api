@@ -27,6 +27,21 @@ func performRequest(r http.Handler, method, path string) *httptest.ResponseRecor
 	return w
 }
 
+func performAuthedRequest(r http.Handler, method, path, token string) (*httptest.ResponseRecorder, http.Handler) {
+	req, _ := http.NewRequest(method, path, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	return w, r
+}
+
+func performAuthedCookieRequest(r http.Handler, req *http.Request, method, path, token string) *httptest.ResponseRecorder {
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	return w
+}
+
 func setupRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger())
@@ -143,8 +158,14 @@ func TestNewJWTMiddleware(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error making request: %s", err)
 		}
+
 		resBody := w.Body.String()
 		t.Log(resBody)
+		var resp gin.H
+		err = json.Unmarshal(w.Body.Bytes(), &resp)
+		if err != nil {
+			t.Errorf("cannot marshal response: %v", err)
+		}
 
 		if len(resBody) == 0 {
 			t.Errorf("Response body is empty")
@@ -154,14 +175,18 @@ func TestNewJWTMiddleware(t *testing.T) {
 			t.Errorf("Response code is %v", w.Code)
 		}
 
-		//w = performRequest(r, "GET", "/auth/refresh_token")
-		//if w.Code != http.StatusOK {
-		//	t.Errorf("Response code is %v", w.Code)
-		//}
-		//
-		//w = performRequest(r, "GET", "/auth/hello")
-		//if w.Code != http.StatusOK {
-		//	t.Errorf("Response code is %v", w.Code)
-		//}
+		w, _ = performAuthedRequest(r, "GET", "/auth/refresh_token", resp["token"].(string))
+		if w.Code != http.StatusOK {
+			t.Errorf("Response code is %v, %v", w.Code, w.Body)
+		}
+		err = json.Unmarshal(w.Body.Bytes(), &resp)
+		if err != nil {
+			t.Errorf("cannot marshal response: %v", err)
+		}
+
+		w, _ = performAuthedRequest(r, "GET", "/auth/hello", resp["token"].(string))
+		if w.Code != http.StatusOK {
+			t.Errorf("Response code is %v", w.Code)
+		}
 	})
 }
