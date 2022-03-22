@@ -51,30 +51,23 @@ func NewUser(publicKey string, isAdmin bool) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	db, err := orbitdb.OpenDatabase(ctx, "users")
+	resp, err := orbitdb.DefaultDatabase.Put(ctx, map[string]interface{}{
+		"_id":       user.ID.String(),
+		"publicKey": user.PublicKey,
+		"nonce":     user.Nonce,
+		"isAdmin":   user.IsAdmin,
+		"createdAt": user.CreatedAt,
+		"updatedAt": user.UpdatedAt,
+	})
 
 	if err != nil {
-		log.Fatalln("Could not open user database")
+		log.Fatalf("Could not create user: %v", err)
 		return nil, err
 	}
 
-	defer func(db *orbitdb.Database) {
-		err := db.Close()
-		if err != nil {
-			log.Fatalf("Could not close user database %v\n", user)
-		}
-	}(db)
+	_id := resp.GetKey()
 
-	resp, err := db.Create(*user, nil)
-
-	if err != nil {
-		log.Fatalln("Could not create user")
-		return nil, err
-	}
-
-	_id := resp["_id"].(string)
-
-	newID, err := uuid.Parse(_id)
+	newID, err := uuid.Parse(*_id)
 
 	if err != nil {
 		log.Fatalln("Could not parse UUID")
@@ -151,45 +144,33 @@ func Find(key string) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	db, err := orbitdb.OpenDatabase(ctx, "users")
-
-	if err != nil {
-		log.Fatalln("Could not open user database")
-		return nil, err
-	}
-
-	defer func(db *orbitdb.Database) {
-		err := db.Close()
-		if err != nil {
-			log.Fatalf("Could not close user database %v\n", key)
-		}
-	}(db)
-
-	find, err := db.Read(key)
+	find, err := orbitdb.DefaultDatabase.Get(ctx, key, nil)
 
 	if err != nil {
 		log.Fatalln("Could not find user")
 		return nil, err
 	}
 
-	id, err := uuid.Parse(find["_id"].(string))
+	id, err := uuid.Parse(key)
 
 	if err != nil {
 		log.Fatalln("Could not parse user id")
 		return nil, err
 	}
 
-	data := find["data"].(map[string]interface{})
+	log.Println(find)
 
-	ca := data["CreatedAt"].(float64)
-	ua := data["UpdatedAt"].(float64)
+	//data := find["data"].(map[string]interface{})
+
+	//ca := data["CreatedAt"].(float64)
+	//ua := data["UpdatedAt"].(float64)
 
 	return &User{
 		ID:        id,
-		PublicKey: data["PublicKey"].(string),
-		Nonce:     data["Nonce"].(string),
-		IsAdmin:   data["IsAdmin"].(bool),
-		CreatedAt: int64(ca),
-		UpdatedAt: int64(ua),
+		PublicKey: "",    //, data["PublicKey"].(string),
+		Nonce:     "",    //data["Nonce"].(string),
+		IsAdmin:   false, //data["IsAdmin"].(bool),
+		CreatedAt: int64(0),
+		UpdatedAt: int64(0),
 	}, nil
 }

@@ -5,7 +5,6 @@ import (
 	"berty.tech/go-orbit-db/iface"
 	"berty.tech/go-orbit-db/stores/operation"
 	"encoding/json"
-	"fmt"
 	"github.com/docker/distribution/uuid"
 	"log"
 	"time"
@@ -30,54 +29,28 @@ func init() {
 // timeout is used to set the timeout for the database operations
 var timeout = 10 * time.Duration(time.Second)
 
-// infinite items to return
-var infinite = -1
-
-// OpenDatabase creates or opens a database
-func OpenDatabase(ctx context.Context, name string) (*Database, error) {
-	if Client == nil {
-		log.Fatalf("Client is not initialized")
-		return nil, fmt.Errorf("client is not initialized." +
-			" Please run orbitdb.InitializeOrbitDB")
-	}
-
-	docs, err := Client.Docs(ctx, name, nil)
-
-	if err != nil {
-		log.Fatalf("Could not open/create database: %v", err)
-		return nil, err
-	}
-
-	return &Database{
-		Name:    name,
-		Store:   &docs,
-		Address: docs.Address(),
-	}, nil
-}
-
 // Create creates a new document in the database
-func (d Database) Create(item interface{}, options *DatabaseCreateOptions) (map[string]interface{}, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+func Create(item interface{}, options *DatabaseCreateOptions) (map[string]interface{}, error) {
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	store := *d.Store
 	var put operation.Operation
 	var err error
 
 	if options != nil {
-		put, err = store.Put(ctx, map[string]interface{}{
+		put, err = DefaultDatabase.Put(ctx, map[string]interface{}{
 			"_id":  options.ID,
 			"data": item,
 		})
 	} else {
-		put, err = store.Put(ctx, map[string]interface{}{
+		put, err = DefaultDatabase.Put(ctx, map[string]interface{}{
 			"_id":  uuid.Generate().String(),
 			"data": item,
 		})
 	}
 
 	if err != nil {
-		log.Fatalf("Could not create item: %v", err)
+		log.Fatalf("Could not create item 1: %v", err)
 		return nil, err
 	}
 
@@ -92,19 +65,11 @@ func (d Database) Create(item interface{}, options *DatabaseCreateOptions) (map[
 }
 
 // Read reads a document from the database
-func (d Database) Read(key string) (map[string]interface{}, error) {
+func Read(key string) (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	store := *d.Store
-	err := store.Load(ctx, infinite)
-
-	if err != nil {
-		log.Fatalf("Could not load database: %v", err)
-		return nil, err
-	}
-
-	get, err := store.Get(ctx, key, nil)
+	get, err := DefaultDatabase.Get(ctx, key, nil)
 
 	if err != nil {
 		log.Fatalf("Could not read item: %v", err)
@@ -127,19 +92,12 @@ func (d Database) Read(key string) (map[string]interface{}, error) {
 }
 
 // Update updates a document in the database
-func (d Database) Update(key string, item interface{}) (map[string]interface{}, error) {
+func Update(key string, item interface{}) (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	store := *d.Store
-	err := store.Load(ctx, infinite)
-	if err != nil {
-		log.Fatalf("Could not load database: %v", err)
-		return nil, err
-	}
-
 	// find the item to update
-	get, err := store.Get(ctx, key, nil)
+	get, err := DefaultDatabase.Get(ctx, key, nil)
 
 	if err != nil {
 		log.Fatalf("Error reading item: %v", err)
@@ -152,13 +110,13 @@ func (d Database) Update(key string, item interface{}) (map[string]interface{}, 
 	}
 
 	// update the item
-	put, err := store.Put(ctx, map[string]interface{}{
+	put, err := DefaultDatabase.Put(ctx, map[string]interface{}{
 		"_id":  key,
 		"data": item,
 	})
 
 	if err != nil {
-		log.Fatalf("Could not create item: %v", err)
+		log.Fatalf("Could not create item 2: %v", err)
 		return nil, err
 	}
 
@@ -174,22 +132,9 @@ func (d Database) Update(key string, item interface{}) (map[string]interface{}, 
 }
 
 // Delete deletes a document from the database
-func (d Database) Delete(key string) error {
+func Delete(key string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	store := *d.Store
-	_, err := store.Delete(ctx, key)
-
-	if err != nil {
-		log.Fatalf("Could not delete item: %v", err)
-		return err
-	}
-
-	return nil
-}
-
-// Close closes the database
-func (d Database) Close() error {
-	store := *d.Store
-	return store.Close()
+	_, err := DefaultDatabase.Delete(ctx, key)
+	return err
 }

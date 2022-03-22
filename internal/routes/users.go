@@ -3,20 +3,17 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/pastoapp/astroid-api/internal/middleware/user"
-	"github.com/pastoapp/astroid-api/internal/orbitdb"
 )
 
 type Users struct {
-	DB     *orbitdb.Database
 	RGroup *gin.RouterGroup
 }
 
 var users Users
 
-func InitUsers(router *gin.Engine, db *orbitdb.Database) {
+func InitUsers(router *gin.Engine) {
 	group := router.Group("/users")
 	users = Users{
-		DB:     db,
 		RGroup: group,
 	}
 	group.POST("/", users.Create)

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"github.com/pastoapp/astroid-api/internal/routes"
 	"log"
 
@@ -17,21 +16,10 @@ var (
 
 func main() {
 	// main database context
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+
 	// create a new orbitdb instance
 	cancelODB, err := odb.InitializeOrbitDB(ipfsURL, orbitDbDir)
 	defer cancelODB() // cancel the orbitdb context
-
-	userDB, err := odb.OpenDatabase(ctx, defaultStores[0])
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = odb.OpenDatabase(ctx, defaultStores[1])
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	// gin server
 	r := gin.Default()
@@ -42,7 +30,7 @@ func main() {
 		})
 	})
 
-	routes.InitUsers(r, userDB)
+	routes.InitUsers(r)
 
 	err = r.Run(":3000")
 

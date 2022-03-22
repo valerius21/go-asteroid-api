@@ -10,6 +10,7 @@ import (
 )
 
 var Client berty.OrbitDB
+var DefaultDatabase iface.DocumentStore
 
 func init() {
 	log.SetPrefix("[orbitdb/orbitdb] ")
@@ -34,6 +35,20 @@ func InitializeOrbitDB(ipfsApiURL, orbitDbDirectory string) (context.CancelFunc,
 		return nil, err
 	}
 	Client = odb
+
+	DefaultDatabase, err = Client.Docs(ctx, "default", nil)
+
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+
+	err = DefaultDatabase.Load(ctx, -1)
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+
 	return cancel, nil
 }
 
