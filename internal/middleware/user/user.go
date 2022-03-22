@@ -158,19 +158,21 @@ func Find(key string) (*User, error) {
 		return nil, err
 	}
 
-	log.Println(find)
+	element := find[0]
 
-	//data := find["data"].(map[string]interface{})
+	log.Println(element)
 
-	//ca := data["CreatedAt"].(float64)
-	//ua := data["UpdatedAt"].(float64)
+	data := element.(map[string]interface{})
+
+	ca := data["createdAt"].(float64)
+	ua := data["updatedAt"].(float64)
 
 	return &User{
 		ID:        id,
-		PublicKey: "",    //, data["PublicKey"].(string),
-		Nonce:     "",    //data["Nonce"].(string),
-		IsAdmin:   false, //data["IsAdmin"].(bool),
-		CreatedAt: int64(0),
-		UpdatedAt: int64(0),
+		PublicKey: data["publicKey"].(string),
+		Nonce:     data["nonce"].(string),
+		IsAdmin:   data["isAdmin"].(bool),
+		CreatedAt: int64(ca),
+		UpdatedAt: int64(ua),
 	}, nil
 }
