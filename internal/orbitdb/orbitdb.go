@@ -30,7 +30,7 @@ func InitializeOrbitDB(ipfsApiURL, orbitDbDirectory string) (context.CancelFunc,
 	ctx, cancel := context.WithCancel(context.Background())
 	odb, err := NewOrbitDB(ctx, orbitDbDirectory, ipfsApiURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		return nil, err
 	}
 	Client = odb
@@ -41,7 +41,7 @@ func NewOrbitDB(ctx context.Context, dbPath, ipfsApiURL string) (iface.OrbitDB, 
 	coreAPI, err := createUrlHttpApi(ipfsApiURL)
 
 	if err != nil {
-		log.Fatalf("Error creating Core API: %v", err)
+		log.Printf("Error creating Core API: %v", err)
 		return nil, err
 	}
 

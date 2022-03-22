@@ -11,6 +11,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/docker/distribution/uuid"
+	"github.com/gin-gonic/gin"
 	"github.com/pastoapp/astroid-api/internal/orbitdb"
 	"log"
 	"time"
@@ -33,7 +34,7 @@ func init() {
 func NewUser(publicKey string, isAdmin bool) (*User, error) {
 	nonce, err := GenerateNonce()
 	if err != nil {
-		log.Fatalln("Failed to generate Nonce")
+		log.Println("Failed to generate Nonce")
 		return nil, err
 	}
 
@@ -51,24 +52,31 @@ func NewUser(publicKey string, isAdmin bool) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	db, err := orbitdb.OpenDatabase(ctx, "users")
+	db, err := orbitdb.OpenDatabase(ctx, "default")
 
 	if err != nil {
-		log.Fatalln("Could not open user database")
+		log.Println("Could not open user database")
 		return nil, err
 	}
 
 	defer func(db *orbitdb.Database) {
-		err := db.Close()
-		if err != nil {
-			log.Fatalf("Could not close user database %v\n", user)
-		}
+		//err := db.Close()
+		//if err != nil {
+		//	log.Printf("Could not close user database %v\n", user)
+		//}
 	}(db)
 
-	resp, err := db.Create(*user, nil)
+	resp, err := db.Create(gin.H{
+		"id":        user.ID.String(),
+		"publicKey": user.PublicKey,
+		"nonce":     user.Nonce,
+		"isAdmin":   user.IsAdmin,
+		"createdAt": user.CreatedAt,
+		"updatedAt": user.UpdatedAt,
+	}, nil)
 
 	if err != nil {
-		log.Fatalln("Could not create user")
+		log.Println("Could not create user")
 		return nil, err
 	}
 
@@ -77,7 +85,7 @@ func NewUser(publicKey string, isAdmin bool) (*User, error) {
 	newID, err := uuid.Parse(_id)
 
 	if err != nil {
-		log.Fatalln("Could not parse UUID")
+		log.Println("Could not parse UUID")
 		return nil, err
 	}
 
@@ -95,14 +103,14 @@ func GenerateNonce() (string, error) {
 	key := [64]byte{}
 	_, err := rand.Read(key[:])
 	if err != nil {
-		log.Fatalln("Failed to generate random key")
+		log.Println("Failed to generate random key")
 		return "", err
 	}
 
 	msgHash := sha256.New()
 	_, err = msgHash.Write(key[:])
 	if err != nil {
-		log.Fatalln("Failed to hash key")
+		log.Println("Failed to hash key")
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(msgHash.Sum(nil)), nil
@@ -118,7 +126,7 @@ func (u User) Login() (string, error) {
 func (u User) RefreshNonce() error {
 	nonce, err := GenerateNonce()
 	if err != nil {
-		log.Fatalln("Failed to generate Nonce")
+		log.Println("Failed to generate Nonce")
 		return err
 	}
 	u.Nonce = nonce
@@ -148,48 +156,72 @@ func (u User) VerifyUser(signature string) error {
 }
 
 func Find(key string) (*User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	//defer cancel()
+	ctx := context.Background()
 
-	db, err := orbitdb.OpenDatabase(ctx, "users")
+	db, err := orbitdb.OpenDatabase(ctx, "default")
+
+	docs, err := orbitdb.Client.Docs(ctx, db.Address.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	if err != nil {
-		log.Fatalln("Could not open user database")
+		log.Println("Could not open user database")
 		return nil, err
 	}
 
 	defer func(db *orbitdb.Database) {
-		err := db.Close()
-		if err != nil {
-			log.Fatalf("Could not close user database %v\n", key)
-		}
+		//err := db.Close()
+		//if err != nil {
+		//	log.Printf("Could not close user database %v\n", key)
+		//}
 	}(db)
 
-	find, err := db.Read(key)
+	//find, err := db.
 
 	if err != nil {
-		log.Fatalln("Could not find user")
 		return nil, err
 	}
 
-	id, err := uuid.Parse(find["_id"].(string))
-
+	err = docs.Load(ctx, -50)
 	if err != nil {
-		log.Fatalln("Could not parse user id")
 		return nil, err
 	}
 
-	data := find["data"].(map[string]interface{})
+	get, err := db.Read(key)
 
-	ca := data["CreatedAt"].(float64)
-	ua := data["UpdatedAt"].(float64)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println(get)
+	//find := ret[0]
+
+	if err != nil {
+		log.Println("Could not find user")
+		return nil, err
+	}
+
+	//id, err := uuid.Parse(find["_id"].(string))
+	//
+	//if err != nil {
+	//	log.Println("Could not parse user id")
+	//	return nil, err
+	//}
+	//
+	//data := find["data"].(map[string]interface{})
+	//
+	//ca := data["CreatedAt"].(float64)
+	//ua := data["UpdatedAt"].(float64)
 
 	return &User{
-		ID:        id,
-		PublicKey: data["PublicKey"].(string),
-		Nonce:     data["Nonce"].(string),
-		IsAdmin:   data["IsAdmin"].(bool),
-		CreatedAt: int64(ca),
-		UpdatedAt: int64(ua),
+		//ID:        id,
+		//PublicKey: data["PublicKey"].(string),
+		//Nonce:     data["Nonce"].(string),
+		//IsAdmin:   data["IsAdmin"].(bool),
+		//CreatedAt: int64(ca),
+		//UpdatedAt: int64(ua),
 	}, nil
 }

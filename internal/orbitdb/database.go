@@ -4,6 +4,7 @@ import (
 	"berty.tech/go-orbit-db/address"
 	"berty.tech/go-orbit-db/iface"
 	"berty.tech/go-orbit-db/stores/operation"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/docker/distribution/uuid"
@@ -36,7 +37,7 @@ var infinite = -1
 // OpenDatabase creates or opens a database
 func OpenDatabase(ctx context.Context, name string) (*Database, error) {
 	if Client == nil {
-		log.Fatalf("Client is not initialized")
+		log.Printf("Client is not initialized")
 		return nil, fmt.Errorf("client is not initialized." +
 			" Please run orbitdb.InitializeOrbitDB")
 	}
@@ -44,7 +45,7 @@ func OpenDatabase(ctx context.Context, name string) (*Database, error) {
 	docs, err := Client.Docs(ctx, name, nil)
 
 	if err != nil {
-		log.Fatalf("Could not open/create database: %v", err)
+		log.Printf("Could not open/create database: %v", err)
 		return nil, err
 	}
 
@@ -55,36 +56,59 @@ func OpenDatabase(ctx context.Context, name string) (*Database, error) {
 	}, nil
 }
 
+func marshalItem(item interface{}) (string, error) {
+	b, err := json.Marshal(item)
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+
+func unmarshalItem(item string) (interface{}, error) {
+	b, err := base64.StdEncoding.DecodeString(item)
+	if err != nil {
+		return nil, err
+	}
+	var i interface{}
+	err = json.Unmarshal(b, &i)
+	if err != nil {
+		return nil, err
+	}
+	return i, nil
+}
+
 // Create creates a new document in the database
 func (d Database) Create(item interface{}, options *DatabaseCreateOptions) (map[string]interface{}, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+	ctx := context.Background() //context.WithTimeout(context.Background(), timeout)
+	//defer cancel()
 
 	store := *d.Store
 	var put operation.Operation
 	var err error
 
+	mItem, err := marshalItem(item)
+
 	if options != nil {
 		put, err = store.Put(ctx, map[string]interface{}{
 			"_id":  options.ID,
-			"data": item,
+			"data": mItem,
 		})
 	} else {
 		put, err = store.Put(ctx, map[string]interface{}{
 			"_id":  uuid.Generate().String(),
-			"data": item,
+			"data": mItem,
 		})
 	}
 
 	if err != nil {
-		log.Fatalf("Could not create item: %v", err)
+		log.Printf("Could not create item: %v", err)
 		return nil, err
 	}
 
 	m := make(map[string]interface{})
 	err = json.Unmarshal(put.GetValue(), &m)
 	if err != nil {
-		log.Fatalf("Could not unmarshal item: %v", err)
+		log.Printf("Could not unmarshal item: %v", err)
 		return nil, err
 	}
 
@@ -93,37 +117,63 @@ func (d Database) Create(item interface{}, options *DatabaseCreateOptions) (map[
 
 // Read reads a document from the database
 func (d Database) Read(key string) (map[string]interface{}, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	//defer cancel()
+	ctx := context.Background()
 
 	store := *d.Store
 	err := store.Load(ctx, infinite)
 
 	if err != nil {
-		log.Fatalf("Could not load database: %v", err)
+		log.Printf("Could not load database: %v", err)
 		return nil, err
 	}
 
 	get, err := store.Get(ctx, key, nil)
 
 	if err != nil {
-		log.Fatalf("Could not read item: %v", err)
+		log.Printf("Could not read item: %v", err)
 		return nil, err
 	}
 
 	// in case more or less than one item is found
 	if len(get) != 1 {
-		return make(map[string]interface{}, 0), nil
+		log.Printf("Could not read item: %v", get)
+		return nil, fmt.Errorf("more than one item or none are found")
 	}
 
+	log.Printf("Read item: %v", get)
 	item := get[0]
 
 	if err != nil {
-		log.Fatalf("Could not unmarshal item: %v", err)
+		log.Printf("Could not unmarshal item: %v", err)
 		return nil, err
 	}
 
 	return item.(map[string]interface{}), nil
+}
+
+func (d Database) QueryByUID(uid uuid.UUID) ([]interface{}, error) {
+	//ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	//defer cancel()
+	ctx := context.Background()
+
+	store := *d.Store
+	err := store.Load(ctx, infinite)
+
+	if err != nil {
+		log.Printf("Could not load database: %v", err)
+		return nil, err
+	}
+
+	result, err := store.Query(ctx, userFilter(uid.String()))
+
+	if err != nil {
+		log.Printf("Could not read item: %v", err)
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // Update updates a document in the database
@@ -134,7 +184,7 @@ func (d Database) Update(key string, item interface{}) (map[string]interface{}, 
 	store := *d.Store
 	err := store.Load(ctx, infinite)
 	if err != nil {
-		log.Fatalf("Could not load database: %v", err)
+		log.Printf("Could not load database: %v", err)
 		return nil, err
 	}
 
@@ -142,12 +192,12 @@ func (d Database) Update(key string, item interface{}) (map[string]interface{}, 
 	get, err := store.Get(ctx, key, nil)
 
 	if err != nil {
-		log.Fatalf("Error reading item: %v", err)
+		log.Printf("Error reading item: %v", err)
 		return nil, err
 	}
 
 	if len(get) != 1 {
-		log.Fatalf("Cannot find exactly one item with key %s", key)
+		log.Printf("Cannot find exactly one item with key %s", key)
 		return nil, err
 	}
 
@@ -158,7 +208,7 @@ func (d Database) Update(key string, item interface{}) (map[string]interface{}, 
 	})
 
 	if err != nil {
-		log.Fatalf("Could not create item: %v", err)
+		log.Printf("Could not create item: %v", err)
 		return nil, err
 	}
 
@@ -166,7 +216,7 @@ func (d Database) Update(key string, item interface{}) (map[string]interface{}, 
 	err = json.Unmarshal(put.GetValue(), &m)
 
 	if err != nil {
-		log.Fatalf("Could not unmarshal item: %v", err)
+		log.Printf("Could not unmarshal item: %v", err)
 		return nil, err
 	}
 
@@ -181,7 +231,7 @@ func (d Database) Delete(key string) error {
 	_, err := store.Delete(ctx, key)
 
 	if err != nil {
-		log.Fatalf("Could not delete item: %v", err)
+		log.Printf("Could not delete item: %v", err)
 		return err
 	}
 
@@ -192,4 +242,16 @@ func (d Database) Delete(key string) error {
 func (d Database) Close() error {
 	store := *d.Store
 	return store.Close()
+}
+
+func userFilter(uid string) func(e interface{}) (bool, error) {
+	return func(e interface{}) (bool, error) {
+		entry, ok := e.(map[string]interface{})
+		data, ok := entry["data"].(map[string]interface{})
+		dbUID, ok := data["uid"].(string)
+		if !ok {
+			return false, fmt.Errorf("unable to cast entry")
+		}
+		return uid == dbUID, nil
+	}
 }

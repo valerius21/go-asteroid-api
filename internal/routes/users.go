@@ -4,7 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pastoapp/astroid-api/internal/middleware/user"
 	"github.com/pastoapp/astroid-api/internal/orbitdb"
+	"log"
 )
+
+func init() {
+	log.SetPrefix("[routes/users] ")
+}
 
 type Users struct {
 	DB     *orbitdb.Database
@@ -43,17 +48,14 @@ func (u Users) Find(context *gin.Context) {
 	find, err := user.Find(id)
 
 	if err != nil {
+		context.JSON(400, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 
 	context.JSON(200, u.response(find))
 }
-
-//func (u User) findAll(context *gin.Context) {
-//	context.JSON(200, gin.H{
-//		"user": "dummy",
-//	})
-//}
 
 func (u Users) Create(context *gin.Context) {
 	// get Form data
@@ -62,7 +64,8 @@ func (u Users) Create(context *gin.Context) {
 	err := context.ShouldBindJSON(&pk)
 	if err != nil {
 		context.JSON(400, gin.H{
-			"error": err.Error(),
+			"error":   err.Error(),
+			"message": "Invalid JSON",
 		})
 		return
 	}

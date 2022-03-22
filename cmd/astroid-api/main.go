@@ -11,7 +11,7 @@ import (
 
 var (
 	ipfsURL       = "http://localhost:5001"
-	orbitDbDir    = "./data/orbitdb"
+	orbitDbDir    = "/data/orbitdb"
 	defaultStores = []string{"users", "notes"}
 )
 
@@ -23,14 +23,9 @@ func main() {
 	cancelODB, err := odb.InitializeOrbitDB(ipfsURL, orbitDbDir)
 	defer cancelODB() // cancel the orbitdb context
 
-	userDB, err := odb.OpenDatabase(ctx, defaultStores[0])
+	defaultDB, err := odb.OpenDatabase(ctx, "default")
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = odb.OpenDatabase(ctx, defaultStores[1])
-	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	// gin server
@@ -42,7 +37,7 @@ func main() {
 		})
 	})
 
-	routes.InitUsers(r, userDB)
+	routes.InitUsers(r, defaultDB)
 
 	err = r.Run(":3000")
 
