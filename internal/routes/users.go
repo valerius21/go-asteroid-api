@@ -11,9 +11,17 @@ type Users struct {
 	RGroup *gin.RouterGroup
 }
 
+type publicKey struct {
+	PublicKey string `json:"publicKey"`
+}
+
+type uid struct {
+	UID string `json:"id"`
+}
+
 var users Users
 
-func InitUsers(router *gin.Engine, db *orbitdb.Database) {
+func InitUsers(router *gin.Engine, db *orbitdb.Database) *Users {
 	group := router.Group("/users")
 	users = Users{
 		DB:     db,
@@ -21,20 +29,31 @@ func InitUsers(router *gin.Engine, db *orbitdb.Database) {
 	}
 	group.POST("/", users.Create)
 	group.GET("/:id", users.Find)
+
+	return &users
 }
 
 func (u Users) Find(context *gin.Context) {
+	var id uid
 
-	id := context.Param("id")
+	err := context.ShouldBindJSON(&id)
 
-	if id == "" {
+	if err != nil {
+		context.JSON(400, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if id.UID == "" {
 		context.JSON(400, gin.H{
 			"error": "id is required",
 		})
 		return
 	}
 
-	find, err := user.Find(id)
+	find, err := user.Find(id.UID)
+
 	if err != nil {
 		return
 	}
@@ -50,9 +69,17 @@ func (u Users) Find(context *gin.Context) {
 
 func (u Users) Create(context *gin.Context) {
 	// get Form data
-	publicKey := context.PostForm("publicKey")
+	var pk publicKey
 
-	if publicKey == "" {
+	err := context.ShouldBindJSON(&pk)
+	if err != nil {
+		context.JSON(400, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if pk.PublicKey == "" {
 		context.JSON(400, gin.H{
 			"error": "publicKey is required",
 		})
@@ -60,7 +87,7 @@ func (u Users) Create(context *gin.Context) {
 	}
 
 	// create user
-	newUser, err := user.NewUser(publicKey, false)
+	newUser, err := user.NewUser(pk.PublicKey, false)
 	if err != nil {
 		context.JSON(400, gin.H{
 			"error": err.Error(),

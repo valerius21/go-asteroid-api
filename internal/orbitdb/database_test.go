@@ -15,9 +15,11 @@ func closeDb(db *Database, t *testing.T) {
 
 func TestNewDatabase(t *testing.T) {
 	cancelFunc, err := InitializeOrbitDB("http://localhost:5001", t.TempDir())
+
 	if err != nil {
 		t.Fatalf("Error initializing OrbitDB: %v", err)
 	}
+
 	defer cancelFunc()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
