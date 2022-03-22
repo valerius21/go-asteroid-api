@@ -15,10 +15,6 @@ type publicKey struct {
 	PublicKey string `json:"publicKey"`
 }
 
-type uid struct {
-	UID string `json:"id"`
-}
-
 var users Users
 
 func InitUsers(router *gin.Engine, db *orbitdb.Database) *Users {
@@ -34,25 +30,17 @@ func InitUsers(router *gin.Engine, db *orbitdb.Database) *Users {
 }
 
 func (u Users) Find(context *gin.Context) {
-	var id uid
 
-	err := context.ShouldBindJSON(&id)
+	id := context.Param("id")
 
-	if err != nil {
-		context.JSON(400, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	if id.UID == "" {
+	if id == "" {
 		context.JSON(400, gin.H{
 			"error": "id is required",
 		})
 		return
 	}
 
-	find, err := user.Find(id.UID)
+	find, err := user.Find(id)
 
 	if err != nil {
 		return

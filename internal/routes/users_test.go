@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"github.com/gin-gonic/gin"
+	"github.com/pastoapp/astroid-api/internal/middleware/user"
 	"github.com/pastoapp/astroid-api/internal/orbitdb"
 	"net/http"
 	"net/http/httptest"
@@ -92,10 +93,20 @@ func TestUserRoutes(t *testing.T) {
 		if w.Code != http.StatusOK {
 			t.Errorf("Expected response code to be %d, but was %d. %v\n", http.StatusOK, w.Code, w.Body)
 		}
+
+		t.Log(w.Body)
 	})
 
 	t.Run("should get a user on /:id", func(t *testing.T) {
-		t.Skip("Not implemented")
+		usr, err := user.NewUser(publicKey, false)
+		if err != nil {
+			t.Fatalf("Error creating user: %v", err)
+		}
+		w := performRequest(r, "GET", "/users/"+usr.ID.String(), nil)
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected response code to be %d, but was %d. %v\n", http.StatusOK, w.Code, w.Body)
+		}
+		t.Log(w.Body)
 	})
 
 }
