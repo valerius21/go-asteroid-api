@@ -9,16 +9,7 @@ type Users struct {
 	RGroup *gin.RouterGroup
 }
 
-var users Users
-
-func InitUsers(router *gin.Engine) {
-	group := router.Group("/users")
-	users = Users{
-		RGroup: group,
-	}
-	group.POST("/", users.Create)
-	group.GET("/:id", users.Find)
-}
+var DefaultUsers Users
 
 func (u Users) Find(context *gin.Context) {
 

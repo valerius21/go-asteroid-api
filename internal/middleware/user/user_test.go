@@ -18,13 +18,13 @@ import (
 func TestNewUser(t *testing.T) {
 	privateK, _ := rsa.GenerateKey(rand.Reader, 4096)
 
-	//privkBytes := x509.MarshalPKCS1PrivateKey(privateK)
-	//privPEM := pem.EncodeToMemory(
-	//	&pem.Block{
-	//		Type:  "RSA PRIVATE KEY",
-	//		Bytes: privkBytes,
-	//	},
-	//)
+	privkBytes := x509.MarshalPKCS1PrivateKey(privateK)
+	privPEM := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: privkBytes,
+		},
+	)
 
 	//t.Logf("%v\n", string(privPEM))
 
@@ -37,7 +37,10 @@ func TestNewUser(t *testing.T) {
 	//t.Logf("%v\n", string(pubkPEM))
 
 	PublicKey := string(pubkPEM)
-	//PrivateKey := string(privPEM)
+	PrivateKey := string(privPEM)
+
+	t.Log(PublicKey)
+	t.Log(PrivateKey)
 
 	cancelFunc, err := orbitdb.InitializeOrbitDB("http://localhost:5001", t.TempDir())
 	if err != nil {
