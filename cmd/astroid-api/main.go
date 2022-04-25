@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/go-playground/validator/v10"
 	"github.com/pastoapp/astroid-api/internal/jwt"
+	"github.com/pastoapp/astroid-api/internal/middleware/note"
 	"github.com/pastoapp/astroid-api/internal/routes"
 	"log"
 	"os"
@@ -72,6 +73,9 @@ func main() {
 
 	r.GET("/users/:id", routes.DefaultUsers.Find)
 	r.POST("/users", routes.DefaultUsers.Create)
+
+	r.GET("/notes/", note.FindAll)
+	r.POST("/notes/", note.Create)
 
 	authMiddleware, err := jwt.NewJWTMiddleware()
 
