@@ -1,23 +1,53 @@
 package main
 
 import (
+	"flag"
 	jwt2 "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-contrib/cors"
+	"github.com/go-playground/validator/v10"
 	"github.com/pastoapp/astroid-api/internal/jwt"
 	"github.com/pastoapp/astroid-api/internal/routes"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	odb "github.com/pastoapp/astroid-api/internal/orbitdb"
 )
 
 var (
-	ipfsURL       = "http://localhost:5001"
-	orbitDbDir    = "./data/orbitdb"
-	defaultStores = []string{"users", "notes"}
+	ipfsURL    = "http://localhost:5001"
+	orbitDbDir = "./data/orbitdb"
 )
 
+func init() {
+	flag.StringVar(&ipfsURL, "ipfs-url", "http://127.0.0.1:5001", "IPFS HTTP API Endpoint")
+	flag.StringVar(&orbitDbDir, "data-dir", "./data/orbitdb", "Data Storage Folder")
+
+	flag.Parse()
+
+	// validate flags
+	v := validator.New()
+
+	err := v.Var(ipfsURL, "url")
+	if err != nil {
+		panic("no valid IPFS HTTP API Endpoint is set")
+		return
+	}
+
+	_, err = os.Stat(orbitDbDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			panic("the directory provided does not exist")
+			return
+		} else {
+			panic(err)
+			return
+		}
+	}
+}
+
 func main() {
+
 	// main database context
 
 	// create a new orbitdb instance
@@ -61,7 +91,7 @@ func main() {
 			claims := jwt2.ExtractClaims(c)
 			//user, _ := c.Get(identityKey)
 			c.JSON(200, gin.H{
-				"userID": claims["_id"],
+				"userID": claims[jwt2.IdentityKey],
 				//"userName": user.(*User).UserName,
 				"text": "Hello World.",
 			})

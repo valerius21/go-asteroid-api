@@ -54,18 +54,19 @@ func NewJWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 
 			err = usr.VerifyUser(string(sign))
 
-			if err != nil {
-				err2 := usr.RefreshNonce()
-				if err2 != nil {
-					log.Println(err2)
-				}
-				return nil, err
-			}
-
-			err = usr.RefreshNonce()
-			if err != nil {
-				return nil, err
-			}
+			// FIXME: 14.04.22 0 23:05
+			//if err == nil {
+			//	err2 := usr.RefreshNonce()
+			//	if err2 != nil {
+			//		log.Println(err2)
+			//	}
+			//	return nil, err
+			//}
+			//
+			//err = usr.RefreshNonce()
+			//if err != nil {
+			//	return nil, err
+			//}
 
 			return gin.H{
 				"id": uid,
@@ -82,7 +83,7 @@ func NewJWTMiddleware() (*jwt.GinJWTMiddleware, error) {
 		//},
 		// the JWT middleware will call this function if an authorization succeeds. It's in the JWT payload
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			return jwt.MapClaims{"hI": "MOm"} // TODO: implement payload
+			return jwt.MapClaims{"hI": "MOm"} // TODO: implement payload w/ permissions for their own notes
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{

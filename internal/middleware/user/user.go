@@ -85,19 +85,20 @@ func NewUser(publicKey string, isAdmin bool) (*User, error) {
 }
 
 func GenerateNonce() (string, error) {
-	key := [64]byte{}
-	_, err := rand.Read(key[:])
+	key := make([]byte, 64)
+	_, err := rand.Read(key)
 	if err != nil {
 		log.Fatalln("Failed to generate random key")
 		return "", err
 	}
 
 	msgHash := sha256.New()
-	_, err = msgHash.Write(key[:])
+	_, err = msgHash.Write(key)
 	if err != nil {
 		log.Fatalln("Failed to hash key")
 		return "", err
 	}
+
 	return base64.StdEncoding.EncodeToString(msgHash.Sum(nil)), nil
 }
 
