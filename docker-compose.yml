@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  ipfs:
+    image: ipfs/go-ipfs:master-2022-07-28-7ec0c24
+    volumes:
+      - ipfs_staging:/export
+      - ipfs_data:/data/ipfs
+    ports:
+      - "0.0.0.0:4001:4001"
+      - "0.0.0.0:8080:8080"
+      - "0.0.0.0:5001:5001"
+    environment:
+      - IPFS_PROFILE=server
+
+volumes:
+  ipfs_staging:
+    driver: local
+  ipfs_data:
+    driver: local
